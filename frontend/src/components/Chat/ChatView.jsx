@@ -49,12 +49,32 @@ export default function ChatView() {
     addMessage(botMsg('How much did you spend? (enter amount)'));
   };
 
-  const handleOptionSelect = (option) => {
+  const handleOptionSelect = async (option) => {
     if (step === 'category') {
       addMessage(userMsg(option));
       setDraft((prev) => ({ ...prev, category: option }));
       setStep('note');
       addMessage(botMsg('Add a note? (optional — tap Skip to skip)'));
+    } else if (step === 'confirm') {
+      if (option === 'Yes, save it') {
+        addMessage(userMsg('Yes, save it'));
+        setLoading(true);
+        try {
+          await addExpense(draft);
+          addMessage(botMsg(`Saved! ₹${draft.amount} on ${draft.category} logged successfully ✅`));
+        } catch {
+          addMessage(botMsg('Something went wrong. Please try again.'));
+        } finally {
+          setLoading(false);
+          setStep(null);
+          setDraft({});
+        }
+      } else {
+        addMessage(userMsg('Cancel'));
+        addMessage(botMsg('Cancelled. Tap + to log a new expense anytime.'));
+        setStep(null);
+        setDraft({});
+      }
     }
   };
 
